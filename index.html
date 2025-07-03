@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscription Artisan</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-messaging-compat.js"></script>
+</head>
+<body style="font-family:sans-serif;padding:20px;background:#f5f5f5">
+  <h2>Inscription Artisan</h2>
+  <input type="text" id="nom" placeholder="Nom complet" style="width:100%;padding:10px;margin:10px 0;"><br>
+  <input type="email" id="email" placeholder="Email" style="width:100%;padding:10px;margin:10px 0;"><br>
+  <input type="text" id="token" placeholder="FCM Token (auto)" readonly style="width:100%;padding:10px;margin:10px 0;background:#eee;"><br>
+  <button onclick="envoyer()" style="padding:12px 20px;background:#00c3ff;color:#fff;border:none;border-radius:5px;cursor:pointer;">S'inscrire</button>
+  <div id="msg" style="margin-top:15px;font-weight:bold;color:green;"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD...",
+      authDomain: "allo-parabole-4c1b2.firebaseapp.com",
+      projectId: "allo-parabole-4c1b2",
+      messagingSenderId: "929513021834",
+      appId: "1:929513021834:web:xxxxxx"
+    };
+
+    const VAPID_KEY = "P2sracQaRIKmR65JH0E26aFUa1w4T1DSa5xGmz-uvG4";
+
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    navigator.serviceWorker.register('firebase-messaging-sw.js')
+      .then(registration => {
+        messaging.useServiceWorker(registration);
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            messaging.getToken({ vapidKey: VAPID_KEY }).then(token => {
+              document.getElementById("token").value = token;
+            }).catch(err => console.error("Erreur de getToken:", err));
+          }
+        });
+      });
+
+    function envoyer() {
+      const nom = document.getElementById("nom").value;
+      const email = document.getElementById("email").value;
+      const token = document.getElementById("token").value;
+      const url = "https://script.google.com/macros/s/AKfycbzsyef13TT1HV9x-5LMe2ccZndqUe5pKBlzjLM3F8MpnyFeB9uw3CAdGoRHhwQfvAVC/exec";
+      const params = new URLSearchParams({ nom, email, fcmToken: token });
+      fetch(url + "?" + params.toString())
+        .then(res => res.text())
+        .then(() => document.getElementById("msg").innerText = "✅ Enregistré avec succès!");
+    }
+  </script>
+</body>
+</html>
